@@ -1,8 +1,7 @@
 #include "hydra_visualizer/adapters/mesh_color.h"
-
-#include <config_utilities/config.h>
-
 #include "hydra_visualizer/color/color_parsing.h"
+#include <spark_dsg/colormaps.h>
+#include <config_utilities/config.h>
 
 namespace hydra {
 
@@ -122,6 +121,89 @@ Color SeenDurationMeshColoring::getVertexColor(const Mesh& mesh, size_t i) const
 
 void SeenDurationMeshColoring::setMaxDuration(spark_dsg::Mesh::Timestamp max) {
   max_ = max;
+}
+
+void declare_config(FusionCountMeshColoring::Config&) {
+  config::name("FusionCountMeshColoring::Config");
+}
+
+FusionCountMeshColoring::FusionCountMeshColoring() : FusionCountMeshColoring(Config()) {}
+
+FusionCountMeshColoring::FusionCountMeshColoring(const Config&) {}
+
+void FusionCountMeshColoring::setMesh(const Mesh& mesh) {
+  if (!mesh.has_fusion_counts || mesh.fusion_counts.empty()) {
+    min_count_ = 2;
+    max_count_ = 2;
+    return;
+  }
+
+  // Calculate range for counts > 1 (count=0 is gray, count=1 is green)
+  min_count_ = std::numeric_limits<uint32_t>::max();
+  max_count_ = 0;
+  for (const auto count : mesh.fusion_counts) {
+    if (count > 1) {  // Only consider multi-fused vertices for palette range
+      if (count < min_count_) {
+        min_count_ = count;
+      }
+      if (count > max_count_) {
+        max_count_ = count;
+      }
+    }
+  }
+  if (min_count_ > max_count_) {
+    min_count_ = 2;
+    max_count_ = 2;
+  }
+}
+
+Color FusionCountMeshColoring::getVertexColor(const Mesh& mesh, size_t i) const {
+  static const visualizer::RainbowPalette palette;
+
+  if (!mesh.has_fusion_counts || i >= mesh.fusion_counts.size()) {
+    return Color::gray();
+  }
+
+  const uint32_t count = mesh.fusion_counts[i];
+  if (count == 0) {
+    return Color::gray();  // Never fused
+  }
+  if (count == 1) {
+    return Color::green();  // Fused once
+  }
+
+  // Fused multiple times: use rainbow palette (red=low to violet=high)
+  if (count <= min_count_) {
+    return palette(0);
+  } else if (count >= max_count_) {
+    return palette(1);
+  }
+
+  const float normalized =
+      static_cast<float>(count - min_count_) / static_cast<float>(max_count_ - min_count_);
+  return palette(normalized);
+}
+
+void declare_config(TemporalIslandMeshColoring::Config&) {
+  config::name("TemporalIslandMeshColoring::Config");
+}
+
+TemporalIslandMeshColoring::TemporalIslandMeshColoring()
+    : TemporalIslandMeshColoring(Config()) {}
+
+TemporalIslandMeshColoring::TemporalIslandMeshColoring(const Config&) {}
+
+Color TemporalIslandMeshColoring::getVertexColor(const Mesh& mesh, size_t i) const {
+  if (!mesh.has_temporal_island_ids || i >= mesh.temporal_island_ids.size()) {
+    return Color::gray();  // No island data available
+  }
+
+  const uint32_t island_id = mesh.temporal_island_ids[i];
+  if (island_id == 0) {
+    return Color::gray();  // No island assignment
+  }
+
+  return spark_dsg::colormaps::distinct150Id(island_id);
 }
 
 MeshColorAdapter::MeshColorAdapter(const Mesh& mesh, MeshColoring::ConstPtr coloring)
