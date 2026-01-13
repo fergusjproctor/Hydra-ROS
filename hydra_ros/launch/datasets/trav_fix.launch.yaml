@@ -1,0 +1,24 @@
+---
+launch:
+  - arg: { name: scene, default: office, description: uhumans2 scene name }
+  - arg: { name: use_gt_semantics, default: "true" }
+  - arg: { name: label_remap_path, default: $(find-pkg-share hydra)/config/label_remaps/uhumans2_$(var scene).yaml }
+  - set_remap: { from: hydra/input/left_cam/depth_registered/image_rect, to: /hilbert/hilbert_zed/depth/image_raw }
+  - set_remap: { from: hydra/input/left_cam/rgb/image_raw, to: /hilbert/hilbert_zed/rgb/image_rect_color }
+  - set_remap: { from: hydra/input/left_cam/rgb/camera_info, to: /hilbert/hilbert_zed/rgb/camera_info }
+  - include:
+      file: $(find-pkg-share hydra_ros)/launch/hydra.launch.yaml
+      arg:
+        - { name: dataset, value: uhumans2 }
+        - { name: sensor_frame, value: robocam }
+        - { name: robot_frame, value: base_link }
+        - { name: odom_frame, value: world }
+        - { name: map_frame, value: map }
+        - { name: lcd_config_path, value: $(find-pkg-share hydra)/config/lcd/uhumans2.yaml }
+        - { name: hydra_config_path, value: $(find-pkg-share hydra)/config/datasets/lukas_trav.yaml }
+        - { name: rviz_path, value: $(find-pkg-share hydra_visualizer)/rviz/lukas_trav.rviz }
+
+  - executable:
+      cmd: ros2 run ianvs play_rosbag /home/lukas/data/fix_trav.bag -r 1 --clock --qos-profile-overrides-path $(find-pkg-share khronos_ros)/config/qos_overrides.yaml
+      name: dataset_player
+      shell: true
