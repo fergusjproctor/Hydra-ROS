@@ -1,2 +1,8 @@
-sinks:
-  - type: ObjectVisualizer
+objects:
+  sinks:
+    - type: ObjectVisualizer
+surface_places:
+  sinks:
+    - type: Place2dVisualizer
+      scale: 0.02
+      alpha: 1.0

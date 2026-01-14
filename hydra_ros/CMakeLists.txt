@@ -41,6 +41,7 @@ add_library(
   src/frontend/gvd_visualization_utilities.cpp
   src/frontend/object_visualizer.cpp
   src/frontend/places_visualizer.cpp
+  src/frontend/place_2d_visualizer.cpp
   src/frontend/ros_frontend_publisher.cpp
   src/frontend/traversability_visualizer.cpp
   src/input/feature_receiver.cpp
