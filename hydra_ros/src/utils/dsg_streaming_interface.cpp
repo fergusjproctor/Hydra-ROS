@@ -32,7 +32,9 @@
  * Government is authorized to reproduce and distribute reprints for Government
  * purposes notwithstanding any copyright notation herein.
  * -------------------------------------------------------------------------- */
-#include "hydra_ros/utils/dsg_streaming_interface.h"
+
+#include <fstream>
+ #include "hydra_ros/utils/dsg_streaming_interface.h"
 
 #include <glog/logging.h>
 #include <hydra/common/dsg_types.h>
@@ -42,6 +44,7 @@
 #include <kimera_pgmo/utils/common_functions.h>
 #include <kimera_pgmo_ros/conversion/ros_conversion.h>
 #include <spark_dsg/serialization/graph_binary_serialization.h>
+#include <spark_dsg/serialization/graph_json_serialization.h>
 
 namespace hydra {
 

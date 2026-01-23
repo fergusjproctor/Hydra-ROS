@@ -32,12 +32,15 @@
  * Government is authorized to reproduce and distribute reprints for Government
  * purposes notwithstanding any copyright notation herein.
  * -------------------------------------------------------------------------- */
-#include "hydra_visualizer/io/graph_ros_wrapper.h"
+#include <fstream>
+
+ #include "hydra_visualizer/io/graph_ros_wrapper.h"
 
 #include <config_utilities/config.h>
 #include <config_utilities/validation.h>
 #include <glog/logging.h>
 #include <spark_dsg/serialization/graph_binary_serialization.h>
+#include <spark_dsg/serialization/graph_json_serialization.h>
 
 namespace hydra {
 
@@ -62,6 +65,15 @@ void GraphRosWrapper::graphCallback(const hydra_msgs::DsgUpdate& msg) {
       graph_ = spark_dsg::io::binary::readGraph(msg.layer_contents);
     } else {
       spark_dsg::io::binary::updateGraph(*graph_, msg.layer_contents);
+      // Use the writeGraph method you identified
+      std::string json_output = spark_dsg::io::json::writeGraph(*graph_, false);
+      std::ofstream out("dsg_snapshot.json");
+      if (out.is_open()) {
+          out << json_output;
+          out.close();
+          // ROS_INFO is better than every frame; consider a counter or timer here
+          ROS_INFO_STREAM_THROTTLE(10, "Successfully saved DSG to dsg_snapshot.json");
+      }
     }
 
     has_change_ = true;

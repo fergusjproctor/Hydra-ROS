@@ -33,7 +33,7 @@
  * purposes notwithstanding any copyright notation herein.
  * -------------------------------------------------------------------------- */
 #include "hydra_ros/backend/ros_backend_publisher.h"
-
+#include <fstream>
 #include <config_utilities/config.h>
 #include <config_utilities/parsing/ros.h>
 #include <config_utilities/printing.h>
@@ -43,6 +43,7 @@
 #include <pose_graph_tools_msgs/PoseGraph.h>
 #include <pose_graph_tools_ros/conversions.h>
 #include <visualization_msgs/Marker.h>
+#include <spark_dsg/serialization/graph_json_serialization.h>
 
 namespace hydra {
 

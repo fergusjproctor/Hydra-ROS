@@ -14,7 +14,7 @@
 
   <arg name="visualizer_verbosity" default="0"/>
   <arg name="visualizer_debug" default="false"/>
-  <arg name="visualizer_roslog_destination" default="log"/>
+  <arg name="visualizer_roslog_destination" default="screen"/>
   <arg name="visualizer_launch_prefix" value="$(eval 'gdb -ex run --args' if visualizer_debug else '')"/>
 
   <arg name="start_visualizer" default="true"/>
