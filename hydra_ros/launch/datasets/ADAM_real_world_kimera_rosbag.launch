@@ -1,0 +1,46 @@
+<launch>
+    <arg name="sim_time_required" default="true"/>
+    <param name="use_sim_time" value="$(arg sim_time_required)"/>
+
+    <arg name="use_gt_frame" default="false"/>
+    <arg name="use_gt_semantics" default="false"/>
+    <arg name="color_mesh_by_label" default="false"/>
+    <arg name="use_single_channel_label_image" default="false"/>
+
+    <arg name="enable_dsg_lcd" default="true"/>
+
+    <arg name="robot_frame"  default="base_link_kimera"/>
+    <arg name="odom_frame"   default="odom"/>
+    <arg name="map_frame"    default="map"/> 
+    <arg name="sensor_frame" default="camera_color_optical_frame"/>
+
+    <arg name="rgb_topic"      default="/camera/color/image_raw"/>
+    <arg name="rgb_info_topic" default="/camera/color/camera_info"/>
+    <arg name="depth_topic"    default="/camera/depth/image_rect_raw"/>
+    <arg name="label_topic"    default="semantic_inference/semantic/image_raw"/>
+
+    <arg name="hydra_config_path" default="$(find hydra)/config/datasets/ADAM_real.yaml"/>
+    <arg name="labelspace_name"   default="ade20k_full"/>
+
+    <group unless="$(arg use_gt_semantics)">
+        <remap from="semantic_inference/color/image_raw" to="$(arg rgb_topic)"/>
+        <include file="$(find semantic_inference_ros)/launch/semantic_inference.launch" pass_all_args="true"/>
+    </group>
+
+    <remap from="hydra_ros_node/pose_graph"
+       to="kimera_vio_ros/pose_graph_incremental"
+       unless="$(arg use_gt_frame)"/>
+
+    <remap from="hydra_ros_node/input/left_cam/depth_registered/image_rect" to="$(arg depth_topic)"/>
+    <remap from="hydra_ros_node/input/left_cam/rgb/image_raw" to="$(arg rgb_topic)"/>
+    <remap from="hydra_ros_node/input/left_cam/rgb/camera_info" to="$(arg rgb_info_topic)"/>
+    <remap from="hydra_ros_node/input/left_cam/semantic/image_raw" to="$(arg label_topic)"/>
+
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="robot_to_camera_bridge" 
+      args="0.3 0 1.0 0 0.785398 0 $(arg robot_frame) camera_link" /> -->
+      
+    <include file="$(find hydra_ros)/launch/hydra.launch" pass_all_args="true">
+        <arg name="dataset_name" value="ADAM_real"/>
+        <arg name="rviz_path" default="$(find hydra_ros)/rviz/ADAM_real.rviz"/>
+    </include>
+</launch>
